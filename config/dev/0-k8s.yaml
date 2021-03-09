@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: irobotbox-dataanalysis-dev
+---
+apiVersion: v1
+data:
+  .dockerconfigjson: eyJhdXRocyI6eyJoYXJib3IuaXJvYm90Ym94LmNvbSI6eyJwYXNzd29yZCI6InNoQDIwMTkjUFgiLCJ1c2VybmFtZSI6ImFkbWluIn19fQ==
+kind: Secret
+metadata:
+  name: register-harbor
+  namespace: irobotbox-dataanalysis-dev
+type: kubernetes.io/dockerconfigjson
+# ---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: nginx-config
+#   namespace: irobotbox-dataanalysis
+# data:
+#   default.conf: |
+#     server {
+#         listen 80;
+#         # gzip config
+#         gzip on;
+#         gzip_min_length 1k;
+#         gzip_comp_level 9;
+#         gzip_types text/plain text/css text/javascript application/json application/javascript application/x-javascript application/xml;
+#         gzip_vary on;
+#         gzip_disable "MSIE [1-6]\.";
+
+#         root /usr/share/nginx/html;
+
+#         location / {
+#             try_files $uri $uri/ /index.html;
+#         }
+
+#         location /api {
+#             proxy_set_header   X-Forwarded-Proto $scheme;
+#             proxy_set_header   Host              "erp-beta.irobotbox.com";
+#             proxy_set_header   X-Real-IP         $remote_addr;
+#             proxy_pass https://stockup.staging.internal.irobotbox.com;
+#         }
+
+#         location /erp {
+#             proxy_set_header   X-Forwarded-Proto $scheme;
+#             proxy_set_header   Host              "api.irobotbox.com";
+#             proxy_set_header   X-Real-IP         $remote_addr;
+#             proxy_pass https://api.internal.irobotbox.com;
+#         }
+
+#         # location /analysis {
+#         #     proxy_set_header   X-Forwarded-Proto $scheme;
+#         #     proxy_set_header   Host              $http_host;
+#         #     proxy_set_header   X-Real-IP         $remote_addr;
+#         #     proxy_pass http://micro-discovery-stockup-api.irobotbox-dataanalysis-staging/api/analysis;
+#         #     # proxy_pass https://dataanalysis.staging.internal.irobotbox.com/dataanalysis/api/analysis/;
+#         # }
+
+#         # location /map/ {
+#         #     proxy_set_header   X-Forwarded-Proto $scheme;
+#         #     proxy_set_header   Host              $http_host;
+#         #     proxy_set_header   X-Real-IP         $remote_addr;
+#         #     proxy_pass https://g2.antv.vision/zh/examples/data/world.geo.json;
+#         # }
+
+#     }
+
+ 
+ 

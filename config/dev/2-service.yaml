@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    traefik.backend.circuitbreaker: NetworkErrorRatio() > 0.5
+    traefik.backend.loadbalancer.method: drr
+  name: svc-irobotbox-integratedkanban-api
+  namespace: irobotbox-dataanalysis-dev
+spec:
+  ports:
+  - port: 80
+  selector:
+    app: irobotbox-integratedkanban-api

@@ -1,0 +1,49 @@
+    node('master') {
+        stage('Prepare') {
+            echo "1.Prepare Stage"
+			docker_host="harbor.irobotbox.com"
+			img_name="irobotbox/micro-integratedkanban-api"
+            checkout scm
+            script {
+                build_tag = "dev-1.${env.BUILD_NUMBER}" //sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                if (env.SVN_REVISION != 'master' && env.SVN_REVISION != null) {
+                    build_tag = "{build_tag}.${env.SVN_REVISION}"
+                }
+                echo build_tag
+            }
+        }
+
+        stage('Build') {
+            echo "2.Build Docker Image Stage"
+            sh "sed -i 's#dev#${build_tag}#' ./docker-compose.yml"
+            sh "docker-compose -f docker-compose.yml build"
+        }
+
+        stage('Push') {
+            echo "3.Push Docker Image Stage"
+            withCredentials([usernamePassword(credentialsId: 'docker-register-harbor', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
+                sh "echo '${dockerPassword}' | docker login  -u ${dockerUser} --password-stdin harbor.irobotbox.com"
+                sh "docker-compose -f docker-compose.yml push"
+ 
+                sh "docker tag harbor.irobotbox.com/irobotbox/micro-integratedkanban-api:${build_tag} harbor.irobotbox.com/irobotbox/micro-integratedkanban-api:latest"  
+                sh "docker tag harbor.irobotbox.com/irobotbox/micro-integratedkanban-taskapi:${build_tag} harbor.irobotbox.com/irobotbox/micro-integratedkanban-taskapi:latest"
+
+                sh "docker push harbor.irobotbox.com/irobotbox/micro-integratedkanban-api:latest"
+                sh "docker push harbor.irobotbox.com/irobotbox/micro-integratedkanban-taskapi:latest"
+
+                sh "docker rmi harbor.irobotbox.com/irobotbox/micro-integratedkanban-api:latest"
+                sh "docker rmi harbor.irobotbox.com/irobotbox/micro-integratedkanban-api:${build_tag}"
+                sh "docker rmi harbor.irobotbox.com/irobotbox/micro-integratedkanban-taskapi:latest"
+                sh "docker rmi harbor.irobotbox.com/irobotbox/micro-integratedkanban-taskapi:${build_tag}"
+
+            }
+        }
+
+        stage('Deploy') {
+		
+            echo "4.Deploy Local Stage K8s"
+            sh "sed -i 's#latest#${build_tag}#' ./ConfigFile/dev/1-deployment.yaml"
+            sh "kubectl --kubeconfig=../../.kube/local-config apply -f ./ConfigFile/dev/ --record"
+        }
+    }
+   

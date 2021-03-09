@@ -1,0 +1,18 @@
+# 后端访问
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: irobotbox-integratedkanban-api
+  namespace: irobotbox-dataanalysis-dev
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    ingress.kubernetes.io/ssl-redirect: "false"  
+spec:
+  rules:
+  - host: dataanalysis.internal.irobotbox.com
+    http:
+      paths:
+      - path: /integrated
+        backend:
+          serviceName: svc-irobotbox-integratedkanban-api
+          servicePort: 80

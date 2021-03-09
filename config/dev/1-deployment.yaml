@@ -1,0 +1,132 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: irobotbox-integratedkanban-api
+  namespace: irobotbox-dataanalysis-dev
+  labels:
+    app: irobotbox-integratedkanban-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: irobotbox-integratedkanban-api
+  template:
+    metadata:
+      labels:
+        app: irobotbox-integratedkanban-api
+    spec:
+      imagePullSecrets:
+      - name: register-harbor
+      containers:
+      - image: "harbor.irobotbox.com/irobotbox/micro-integratedkanban-api:latest"
+        imagePullPolicy: Always
+        name: irobotbox-integratedkanban-api
+        env:
+          - name: ASPNETCORE_ENVIRONMENT
+            value: Development
+          - name: TZ
+            value: Asia/Shanghai
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: volume-localtime
+        resources:
+          requests:
+            cpu: 300m
+            memory: 384Mi
+          limits:
+            cpu: 1
+            memory: 2048Mi  
+      volumes:
+        - name: volume-localtime
+          hostPath:
+            path: /etc/localtime
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+ name: irobotbox-integratedkanban-job-currency 
+ namespace:  irobotbox-dataanalysis-dev
+ labels:
+    name: irobotbox-integratedkanban-job-currency
+spec:
+  schedule: "5 1 * * *"  
+  concurrencyPolicy: Forbid 
+  startingDeadlineSeconds: 200
+  jobTemplate:
+   spec:
+    template:
+      metadata:
+        labels:
+          app: irobotbox-integratedkanban-job-currency
+      spec:
+        imagePullSecrets:
+        - name: register-harbor
+        restartPolicy: OnFailure
+        containers:
+        - name: irobotbox-integratedkanban-job-currency
+          image: harbor.irobotbox.com/irobotbox/micro-integratedkanban-cli:latest
+          command: ["./Irobotbox.integratedkanban.Task.Command","CurrencyRun"] 
+          env:
+              - name: ASPNETCORE_ENVIRONMENT
+                value: Development
+              - name: TZ
+                value: Asia/Shanghai
+          volumeMounts:
+          - mountPath: /etc/localtime
+            name: volume-localtime
+          resources:
+            requests:
+                memory: "384Mi"
+                cpu: "50m"
+            limits:
+                memory: "1024Mi"
+                cpu: "600m"
+        volumes:
+        - name: volume-localtime
+          hostPath:
+            path: /etc/localtime
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+ name: irobotbox-integratedkanban-job-ordersourcesku 
+ namespace:  irobotbox-dataanalysis-dev
+ labels:
+    name: irobotbox-integratedkanban-job-ordersourcesku
+spec:
+  schedule: "5 1 * * *"   
+  concurrencyPolicy: Forbid 
+  startingDeadlineSeconds: 200
+  jobTemplate:
+   spec:
+    template:
+      metadata:
+        labels:
+          app: irobotbox-integratedkanban-job-ordersourcesku
+      spec:
+        imagePullSecrets:
+        - name: register-harbor
+        restartPolicy: OnFailure
+        containers:
+        - name: irobotbox-integratedkanban-job-ordersourcesku
+          image: harbor.irobotbox.com/irobotbox/micro-integratedkanban-cli:latest
+          command: ["./Irobotbox.integratedkanban.Task.Command","OrderSourceSkuRun"]
+          env:
+              - name: ASPNETCORE_ENVIRONMENT
+                value: Development
+              - name: TZ
+                value: Asia/Shanghai
+          volumeMounts:
+          - mountPath: /etc/localtime
+            name: volume-localtime
+          resources:
+            requests:
+                memory: "384Mi"
+                cpu: "50m"
+            limits:
+                memory: "1024Mi"
+                cpu: "600m"          
+        volumes:
+        - name: volume-localtime
+          hostPath:
+            path: /etc/localtime
